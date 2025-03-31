@@ -1,118 +1,129 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package torreshanoi;
-
-/**
- *
- * @author thejo
- */
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 
-public class Vista extends JFrame{
-     private Model model;
-    private JButton[][] towerButtons;  // Botons dels discs en cada pila
-    private JButton moveButton;        // Botó per fer movimients
-    private JComboBox<Integer> fromBox, toBox; // Selecció de piles origen i desti
-    private JLabel statusLabel;        // Estat del joc
+public class Vista extends JFrame {
+
+    private Model model;
+    private JButton[][] towerButtons;  // Botones de los discos en cada torre
+    private JLabel statusLabel;        // Estado del juego
+    private int origenSeleccionado = -1; // Torre de origen seleccionada
+    private int discoSeleccionado = -1;  // Disco seleccionado (valor real)
 
     public Vista(Model model) {
         this.model = model;
 
-        // Configuració de la finestra
+        // Configuración de la ventana
         setTitle("Torres de Hanoi 🏗️");
         setSize(800, 800);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // Panel principal per les piles
+        // Panel principal para las torres
         JPanel towersPanel = new JPanel(new GridLayout(1, model.getMAX_PILES(), 10, 10));
         towerButtons = new JButton[model.getMAX_PILES()][model.getTOTAL_DISCS()];
 
-        // Crear piles amb botons buits
+        // Crear torres con botones de discos
         for (int i = 0; i < model.getMAX_PILES(); i++) {
+            final int torreIndex = i; // Variable final para la torre
+
             JPanel tower = new JPanel(new GridLayout(model.getTOTAL_DISCS(), 1));
-            tower.setBorder(BorderFactory.createTitledBorder("Pila " + i));
+            tower.setBorder(BorderFactory.createTitledBorder("Torre " + i));
+
+            // 🔥 Permitir clics en cualquier parte de la torre (incluyendo espacios vacíos)
+            tower.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    intentarMoverDisco(torreIndex); // Ahora se puede soltar en cualquier parte de la torre
+                }
+            });
 
             for (int j = 0; j < model.getTOTAL_DISCS(); j++) {
-                towerButtons[i][j] = new JButton();
-                towerButtons[i][j].setEnabled(false);
-                tower.add(towerButtons[i][j]);
+                JButton disco = new JButton();
+                disco.setEnabled(false);
+                disco.setBackground(Color.LIGHT_GRAY);
+
+                disco.addActionListener(e -> seleccionarDisco(torreIndex, disco));
+
+                towerButtons[i][j] = disco;
+                tower.add(disco);
             }
 
-            towersPanel.add(tower);
-            
-            
+            towersPanel.add(tower); //  Añadir la torre completa al panel
         }
 
-        // Panel de control
-        JPanel controlPanel = new JPanel();
-        fromBox = new JComboBox<>(new Integer[]{0, 1, 2});
-        toBox = new JComboBox<>(new Integer[]{0, 1, 2});
-        moveButton = new JButton("Moure");
-        statusLabel = new JLabel("Selecciona origen i desti.");
-
-        controlPanel.add(new JLabel("De:"));
-        controlPanel.add(fromBox);
-        controlPanel.add(new JLabel("A:"));
-        controlPanel.add(toBox);
-        controlPanel.add(moveButton);
-        
-        // Evento del botón "Mover"
-        moveButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int origen = (int) fromBox.getSelectedItem();
-                int destino = (int) toBox.getSelectedItem();
-
-                if (origen == destino) {
-                    statusLabel.setText("❌ No pots moure a la mateixa pila.");
-                    return;
-                }
-
-                boolean success = model.moureDisc(origen, destino);
-                if (success) {
-                    statusLabel.setText("✅ Movimient realitzat.");
-                    actualitzarVista();
-                } else {
-                    statusLabel.setText("❌ Movimient invàlid.");
-                }
-            }
-        });
-
-        // Afegir components a la finestra
+        // Etiqueta de estado del juego
+        statusLabel = new JLabel("Haz clic en un disco para seleccionarlo.");
         add(towersPanel, BorderLayout.CENTER);
-        add(controlPanel, BorderLayout.SOUTH);
         add(statusLabel, BorderLayout.NORTH);
 
-        // Actualitzar la vista amb els discs inicials
+        // Actualizar la vista con los discos iniciales
         actualitzarVista();
         setVisible(true);
     }
 
-    // Métode per actualitzar l'interfaç depenent l'estat del model
+    // Método para manejar la selección de discos con el mouse
+    private void seleccionarDisco(int torre, JButton disco) {
+        if (origenSeleccionado == -1) {
+            // Verificar si la torre tiene discos
+            if (model.getPiles()[torre].isEmpty()) {
+                statusLabel.setText("❌ No hay discos en esta torre.");
+                return;
+            }
+
+            // Seleccionar el disco superior
+            origenSeleccionado = torre;
+            discoSeleccionado = model.getPiles()[torre].peek(); // Obtener el disco en la cima
+            statusLabel.setText("📌 Disco " + discoSeleccionado + " seleccionado de Torre " + torre);
+        }
+    }
+
+    // Método para intentar mover el disco a otra torre
+    private void intentarMoverDisco(int torreDestino) {
+        if (origenSeleccionado == -1) {
+            statusLabel.setText("⚠️ Primero selecciona un disco.");
+            return;
+        }
+
+        if (origenSeleccionado == torreDestino) {
+            statusLabel.setText("❌ No puedes mover el disco a la misma torre.");
+            return;
+        }
+
+        boolean exito = model.moureDisc(origenSeleccionado, torreDestino);
+        if (exito) {
+            statusLabel.setText("✅ Disco " + discoSeleccionado + " movido de Torre " + origenSeleccionado + " a Torre " + torreDestino);
+            actualitzarVista();
+        } else {
+            statusLabel.setText("❌ Movimiento inválido.");
+        }
+
+        // Resetear selección
+        origenSeleccionado = -1;
+        discoSeleccionado = -1;
+    }
+
+    // Método para actualizar la vista con el estado del modelo
     public void actualitzarVista() {
         for (int i = 0; i < model.getMAX_PILES(); i++) {
             Integer[] discos = model.getPiles()[i].toArray(new Integer[0]);
 
-            
-            // Reiniciar tots els botons
+            // Reiniciar todos los botones
             for (int j = 0; j < model.getTOTAL_DISCS(); j++) {
                 towerButtons[i][j].setText("");
-                towerButtons[i][j].setBackground(null);
+                towerButtons[i][j].setBackground(Color.LIGHT_GRAY);
+                towerButtons[i][j].setEnabled(false);
             }
 
-            // Mostrar els discs en la pila 
-           for (int j = 0; j < discos.length; j++) {
-                towerButtons[i][model.getTOTAL_DISCS() - discos.length + j].setText(String.valueOf(j+1));
-                towerButtons[i][model.getTOTAL_DISCS() - discos.length + j].setBackground(Color.CYAN);
+            // Mostrar los discos en la pila
+            for (int j = 0; j < discos.length; j++) {
+                int index = model.getTOTAL_DISCS() - discos.length + j;
+                towerButtons[i][index].setText(String.valueOf(discos[j]));
+                towerButtons[i][index].setBackground(Color.CYAN);
+                towerButtons[i][index].setEnabled(true);
             }
         }
-        
-}
+    }
 }

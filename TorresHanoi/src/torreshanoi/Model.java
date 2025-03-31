@@ -12,24 +12,25 @@ import java.util.Deque;
  * @author thejo
  */
 public class Model {
+
     //Constants
-    private final int MAX_PILES=3;
-    private final int TOTAL_DISCS=5;
+    private final int MAX_PILES = 3;
+    private final int TOTAL_DISCS = 5;
     //Atributs
-    
+
     private Deque<Integer> piles[];
 
     public Model() {
         this.piles = new ArrayDeque[MAX_PILES];
-        
+
         // Crear 3 torres (con ArrayDeque)
         piles = new ArrayDeque[MAX_PILES];
         for (int i = 0; i < MAX_PILES; i++) {
             piles[i] = new ArrayDeque<>();
         }
-        
+
         //Omplim la 1era pila per poder començar el joc
-        for(int disc=TOTAL_DISCS;disc>=1;disc--){
+        for (int disc = TOTAL_DISCS; disc >= 1; disc--) {
             piles[0].push(disc);
         }
     }
@@ -46,14 +47,11 @@ public class Model {
         return piles;
     }
 
-    
-
     public int getTOTAL_DISCS() {
         return TOTAL_DISCS;
     }
 
     //Mètodes
-
     // Fem el moviment de disc
     public boolean moureDisc(int origen, int desti) {
         if (origen < 0 || origen > 2 || desti < 0 || desti > 2) {
@@ -79,12 +77,4 @@ public class Model {
         return true;
     }
 
-       
-    
-    
-
-    
-    
-    
-    
 }
