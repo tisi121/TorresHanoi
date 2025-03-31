@@ -19,8 +19,8 @@ public class Model {
     
     private Deque<Integer> piles[];
 
-    public Model(Deque<Integer>[] piles) {
-        this.piles = piles;
+    public Model() {
+        this.piles = new ArrayDeque[MAX_PILES];
         
         // Crear 3 torres (con ArrayDeque)
         piles = new ArrayDeque[MAX_PILES];
@@ -29,7 +29,7 @@ public class Model {
         }
         
         //Omplim la 1era pila per poder començar el joc
-        for(int disc=TOTAL_DISCS;disc>1;disc--){
+        for(int disc=TOTAL_DISCS;disc>=1;disc--){
             piles[0].push(disc);
         }
     }
@@ -55,32 +55,31 @@ public class Model {
     //Mètodes
 
     // Fem el moviment de disc
-    public boolean moureDisc(int origen, int destino) {
-        if (origen < 0 || origen > 2 || destino < 0 || destino > 2) {
-            throw new IllegalArgumentException("Torres deben estar entre 0 y 2.");
+    public boolean moureDisc(int origen, int desti) {
+        if (origen < 0 || origen > 2 || desti < 0 || desti > 2) {
+            throw new IllegalArgumentException("Les piles han d'estar entre 0 i 2.");
         }
 
-        // Validar si la torre de origen está vacía
+        // Validar si la pila d'origen está buida
         if (piles[origen].isEmpty()) {
-            System.out.println("❌ Movimiento inválido: Torre de origen vacía.");
+            System.out.println("❌ Movimiento inválid: Torre de origen buida.");
             return false;
         }
 
-        int disco = piles[origen].peek(); // Disco a mover
+        int disco = piles[origen].peek(); // Disc a moure
 
-        // Validar si el movimiento es válido (disco pequeño sobre disco grande)
-        if (!piles[destino].isEmpty() && piles[destino].peek() < disco) {
-            System.out.println("❌ Movimiento inválido: Disco más grande sobre uno más pequeño.");
+        // Validar si el movimient es válid (disc petit sobre disc gran)
+        if (!piles[desti].isEmpty() && piles[desti].peek() < disco) {
+            System.out.println("❌ Movimient inválid: Disc mes gran sobre un mes petit.");
             return false;
         }
 
         // Realizar el movimiento
-        piles[destino].push(piles[origen].pop());
+        piles[desti].push(piles[origen].pop());
         return true;
     }
 
-    
-    
+       
     
     
 
